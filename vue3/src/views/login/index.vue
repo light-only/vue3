@@ -8,51 +8,74 @@
           <el-input v-model="ruleForm.username" type="username" autocomplete="off" />
         </el-form-item>
         <el-form-item label="用户密码" prop="password">
-          <el-input v-model.password="ruleForm.password" type="password" autocomplete="off"/>
+          <el-input v-model="ruleForm.password" type="password" autocomplete="off"/>
         </el-form-item>
         <el-form-item label="验证码" prop="code">
           <el-input v-model="ruleForm.code" />
         </el-form-item>
-        <el-form-item v-model="ruleForm.remember">
-          <el-checkbox>记住密码</el-checkbox>
+        <el-form-item prop="remember">
+          <el-checkbox v-model="ruleForm.remember">记住密码</el-checkbox>
         </el-form-item>
-
         <el-form-item>
-          <el-button type="primary" @click="submitForm(ruleFormRef)">登录</el-button>
-          <el-button @click="resetForm(ruleFormRef)">没有注册？，去注册</el-button>
+          <el-button type="primary" @click="submitForm()">登录</el-button>
+          <el-button @click="resetForm()">没有注册？，去注册</el-button>
         </el-form-item>
       </el-form>
     </div>
   </div>
 </template>
 <script setup>
-import {toRefs,ref,getCurrentInstance} from 'vue';
-import {reactive} from "vue";
+import {toRefs,getCurrentInstance,reactive} from 'vue';
+import {useStore} from "vuex";
+import {useRouter} from "vue-router";
+import Cookies from 'js-cookie';
+import {encrypt} from "@/untils/encrypt";
 
+const store = useStore();
+const router = useRouter();
 const {proxy} = getCurrentInstance();
-const ruleFormRef = ref();
 const data = reactive({
-  ruleForm:{},
+  ruleForm:{
+    username:'',
+    password:"",
+    code:'',
+    uuid:1,
+    remember:false
+  },
   rules:{
     username: [{ required: true, trigger: "blur", message: "请输入您的账号" }],
     password: [{ required: true, trigger: "blur", message: "请输入您的密码" }],
   }
 });
 
-function submitForm(form){
-  proxy.$refs.form.validate(valid=>{
+function submitForm(){
+  proxy.$refs['ruleFormRef'].validate(valid=>{
     if(valid){
-      if(ruleForm.remember){
-        Cookies.set('username',ruleForm.username,{exprise:30})
-        Cookies.set('password',ruleForm.password,{exprise:30})
+      if(ruleForm.value.remember){
+        // Cookies.set('username',ruleForm.value.username,{exprise:30})
+        // Cookies.set('password',encrypt(ruleForm.value.password),{exprise:30});
+        // Cookies.set('remember',ruleForm.value.remember,{exprise:30});
+      }else{
+        //移除
+        Cookies.remove('username');
+        Cookies.remove('password');
+        Cookies.remove('remember');
       }
+      ruleForm.value.password = encrypt(ruleForm.value.password);
+      //调用 store里面actions登录方法
+      store.dispatch('Login',ruleForm.value).then(()=>{
+          router.push('/');
+      });
+      store.dispatch('GenerateRoutes').then(accessRoutes=>{
+
+      })
     }
   })
 }
 function resetForm(){
 
 }
-const {ruleForm,rules} = toRefs(data);
+const {rules,ruleForm} = toRefs(data);
 
 </script>
 

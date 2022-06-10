@@ -6,7 +6,17 @@ export const constantRoutes = [
         path:"/login",
         component:()=>import('@/views/login'),
         hidden: true
-    }
+    },
+    {
+        path:"/",
+        component:()=>import('@/views/home'),
+        hidden: true
+    },
+    {
+        path: "/:pathMatch(.*)*",
+        component: () => import('@/views/error/404'),
+        hidden: true
+    },
 ];
 
 const router =createRouter({

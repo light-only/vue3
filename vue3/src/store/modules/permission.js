@@ -1,0 +1,7 @@
+
+const permission = {
+    state:{
+
+    },
+
+}
